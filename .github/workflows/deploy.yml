@@ -19,7 +19,7 @@ jobs:
 
       - name: Deploy to EC2 via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@13.229.250.227 << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@54.179.155.20<< 'EOF'
             echo "🔄 Pulling latest code from GitHub..."
 
             # Clone or update repo
