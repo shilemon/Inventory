@@ -1,0 +1,51 @@
+name: Deploy Inventory Laravel App
+
+on:
+  push:
+    branches: [main]  # Trigger deployment on push to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Add SSH Key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Deploy to EC2 via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@13.229.250.227 << 'EOF'
+            echo "🔄 Pulling latest code from GitHub..."
+
+            # Go to project directory or clone if not exists
+            cd ~/Inventory || git clone https://github.com/shilemon/Inventory.git && cd Inventory
+
+            # Pull latest code
+            git stash || true
+            git fetch origin
+            git checkout main
+            git pull origin main
+
+            echo "🐳 Rebuilding Docker containers..."
+            sudo docker-compose down
+            sudo docker-compose up -d --build
+
+            echo "🛠️ Running Laravel post-deploy steps..."
+
+            # Run Laravel post-deployment tasks
+            sudo docker-compose exec -T app php artisan config:clear
+            sudo docker-compose exec -T app php artisan config:cache
+            sudo docker-compose exec -T app php artisan migrate --force
+            sudo docker-compose exec -T app php artisan storage:link || true
+            sudo docker-compose exec -T app php artisan queue:restart || true
+
+            echo "🧹 Cleaning up old Docker images..."
+            sudo docker image prune -f
+
+            echo "✅ Deployment finished!"
+          EOF
