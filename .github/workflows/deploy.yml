@@ -22,10 +22,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no ubuntu@13.229.250.227 << 'EOF'
             echo "🔄 Pulling latest code from GitHub..."
 
-            # Go to project directory or clone if not exists
+            # Clone or update repo
             cd ~/Inventory || git clone https://github.com/shilemon/Inventory.git && cd Inventory
-
-            # Pull latest code
             git stash || true
             git fetch origin
             git checkout main
@@ -35,9 +33,10 @@ jobs:
             sudo docker-compose down
             sudo docker-compose up -d --build
 
-            echo "🛠️ Running Laravel post-deploy steps..."
+            echo "🛠️ Installing Composer dependencies..."
+            sudo docker-compose exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader
 
-            # Run Laravel post-deployment tasks
+            echo "⚙️ Running Laravel post-deploy steps..."
             sudo docker-compose exec -T app php artisan config:clear
             sudo docker-compose exec -T app php artisan config:cache
             sudo docker-compose exec -T app php artisan migrate --force
