@@ -85,8 +85,3 @@ This Laravel project is fully containerized and deployed using modern DevOps pra
 
 ---
 
-## 👨‍💻 Our Valuable Team 👩‍💻
-
-<p align="center">
-  <img src="https://contributors-img.web.app/image?repo=ekramasif/Inventory_Management_System" />
-</p>
